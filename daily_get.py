@@ -5,19 +5,28 @@ met_credenhill_id = met_loc_id('Credenhill')
 print(met_credenhill_id)
 
 request = met_5d_forecast(met_credenhill_id)
-if request.startswith('Error'):
+if type(request) == str:
     with open('data/met_5d.jsonl', 'a') as f:
         f.write(request + '\n')
 else:
     with open('data/met_5d.jsonl', 'a') as f:
         f.write(json.dumps(request) + '\n')
 
-
-# with open('data/met_past_24h.jsonl', 'a') as f:
-#     f.write(json.dumps(met_past_24h(met_credenhill_id)) + '\n')
+request = met_past_24h(met_credenhill_id)
+if type(request) == str:
+    with open('data/met_past_24h.jsonl') as f:
+        f.write(request + '\n')
+else:
+    with open('data/met_past_24h.jsonl', 'a') as f:
+        f.write(json.dumps(met_past_24h(met_credenhill_id)) + '\n')
 
 accu_credenhill_id = accu_loc_id('HR47DW')
 print(accu_credenhill_id)
 
-with open('data/accu_5d.jsonl', 'a') as f:
-    f.write(json.dumps(accu_5d_forecast(accu_credenhill_id)) + '\n')
+request = accu_5d_forecast(accu_credenhill_id)
+if type(request) == str:
+    with open('data/accu_5d.jsonl') as f:
+        f.write(request + '\n')
+else:
+    with open('data/accu_5d.jsonl', 'a') as f:
+        f.write(json.dumps(accu_5d_forecast(accu_credenhill_id)) + '\n')
