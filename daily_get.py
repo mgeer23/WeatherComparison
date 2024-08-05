@@ -18,8 +18,8 @@ else:
 
 request = met_past_24h(met_credenhill_id)
 if type(request) == str:
-    with open('data/met_past_24h.jsonl') as f:
-    # with open(PI_PATH + 'data/met_past_24h.jsonl') as f:
+    with open('data/met_past_24h.jsonl', 'a') as f:
+    # with open(PI_PATH + 'data/met_past_24h.jsonl', 'a') as f:
         f.write(request + '\n')
 else:
     with open('data/met_past_24h.jsonl', 'a') as f:
@@ -31,8 +31,8 @@ print(accu_credenhill_id)
 
 request = accu_5d_forecast(accu_credenhill_id)
 if type(request) == str:
-    with open('data/accu_5d.jsonl') as f:
-    # with open(PI_PATH + 'data/accu_5d.jsonl') as f:
+    with open('data/accu_5d.jsonl', 'a') as f:
+    # with open(PI_PATH + 'data/accu_5d.jsonl', 'a') as f:
         f.write(request + '\n')
 else:
     with open('data/accu_5d.jsonl', 'a') as f:
