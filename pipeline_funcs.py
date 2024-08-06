@@ -1,4 +1,4 @@
-import os, json
+import os, json, datetime
 
 def read_last_line(file_path):
     """
@@ -16,24 +16,50 @@ def read_last_line(file_path):
             f.seek(0)
         return json.loads(f.readline().decode())
     
-def met_past_24h_extract(json_str):
+def met_past_24h_extract(json_line):
     """
     Takes a json line of the met past 24 hour data and generates
     individual lists for each hour of the previous day.
     The output lists contain the location, date, hour, temperature (C),
     weather code and boolean for if there was precipitation.
     """
-    location = json_str['SiteRep']['DV']['Location']['name']
-    days = json_str['SiteRep']['DV']['Location']['Period']
+    location = json_line['SiteRep']['DV']['Location']['name']
+    days = json_line['SiteRep']['DV']['Location']['Period']
     for day in days:
         date = day['value'][:-1]
+        split_date = str.split(date, '-')
         for h in day['Rep']:
             temp = h['T']
             weather_code = h['W']
-            precip_bool = int(weather_code) > 8
+            precip_bool = int(int(weather_code) > 8)
             hour = int(h['$']) / 60
-            data_row = [location, date, hour, temp, weather_code, precip_bool]
+            dt = datetime.datetime(int(split_date[0]), int(split_date[1]), int(split_date[2]), hour)
+            data_row = [location, dt, temp, weather_code, precip_bool]
             yield data_row
+
+def met_past_24h_extract_list(json_line):
+    """
+    Takes a json line of the met past 24 hour data and generates
+    individual lists for each hour of the previous day.
+    The output lists contain the location, date, hour, temperature (C),
+    weather code and boolean for if there was precipitation.
+    """
+    return_list = []
+    location = json_line['SiteRep']['DV']['Location']['name']
+    days = json_line['SiteRep']['DV']['Location']['Period']
+    for day in days:
+        date = day['value'][:-1]
+        split_date = str.split(date, '-')
+        for h in day['Rep']:
+            temp = h['T']
+            weather_code = h['W']
+            precip_bool = int(int(weather_code) > 8)
+            hour = int(h['$']) / 60
+            dt = datetime.datetime(int(split_date[0]), \
+                                   int(split_date[1]), \
+                                    int(split_date[2]), hour)
+            return_list.append([location, dt, temp, weather_code, precip_bool])
+    return return_list
 
 
 
