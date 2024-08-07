@@ -8,6 +8,7 @@ requests = "*"
 pandas = "*"
 numpy = "*"
 matplotlib = "*"
+python-dotenv = "*"
 
 [dev-packages]
 ipykernel = "*"
