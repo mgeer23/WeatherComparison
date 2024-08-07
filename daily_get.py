@@ -1,6 +1,9 @@
-import json
+import json, os
 from get_funcs import met_loc_id, met_5d_forecast, met_past_24h, accu_loc_id, accu_5d_forecast
-from api_keys import PI_PATH
+from dotenv import load_dotenv
+
+load_dotenv()
+PI_PATH = os.getenv('PI_PATH')
 
 met_credenhill_id = met_loc_id('Credenhill')
 print(met_credenhill_id)
