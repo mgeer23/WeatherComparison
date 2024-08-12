@@ -5,14 +5,14 @@ name = "pypi"
 
 [packages]
 requests = "*"
-pandas = "*"
-numpy = "*"
-matplotlib = "*"
 python-dotenv = "*"
 mariadb = "*"
 
 [dev-packages]
 ipykernel = "*"
+pandas = "*"
+matplotlib = "*"
+numpy = "*"
 
 [requires]
 python_version = "3.12"
