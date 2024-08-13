@@ -1,8 +1,8 @@
 import os, json, mariadb
+from supabase import create_client
 
 # ===============================================================
 # ================   READ SAVED JSONL FILES   ===================
-
 
 def read_last_line(file_path):
     """
@@ -76,6 +76,33 @@ def met_past_24h_extract_list(json_line):
             return_list.append([location, stringtime, temp, weather_code, precip_bool])
     return return_list
 
+def met_past_24h_extract_dict(json_line):
+    """
+    Takes a json line of the met past 24 hour data and generates
+    individual lists for each hour of the previous day.
+    The output lists contain the location, date, hour, temperature (C),
+    weather code and boolean for if there was precipitation.
+    """
+    return_list = []
+    location = json_line['SiteRep']['DV']['Location']['name']
+    days = json_line['SiteRep']['DV']['Location']['Period']
+    for day in days:
+        date = day['value'][:-1]
+        # split_date = str.split(date, '-')
+        for h in day['Rep']:
+            temp = h['T']
+            weather_code = h['W']
+            precip_bool = int(int(weather_code) > 8)
+            hour = int(int(h['$']) / 60)
+            # dt = datetime.datetime(int(split_date[0]), \
+            #                        int(split_date[1]), \
+            #                         int(split_date[2]), hour)
+            stringtime = f"{date} {hour}:00:00"
+            hour_dict = {'location' : location, 'date_time' : stringtime, 'temp' : temp, 
+                         'weather_code' : weather_code, 'precip_bool' : precip_bool}
+            return_list.append(hour_dict)
+    return return_list
+
 # ===============================================================
 # ===================   MARIADB FUNCTIONS   =====================
 
@@ -90,7 +117,7 @@ def sql_add_data(table_name, json_line):
                     INSERT INTO {table_name} {col_names[0]}
                     VALUES {col_names[1]}
                     """
-    new_values = extract_dict['met_past_24h'](json_line)
+    new_values = extract_dict[table_name](json_line)
 
     try:
         with mariadb.connect(host = 'localhost',
@@ -102,6 +129,20 @@ def sql_add_data(table_name, json_line):
             connection.commit()
     except mariadb.Error as e:
         print(e)
+
+# ===============================================================
+# ===================   SUPABASE FUNCTIONS   ====================
+
+url = os.getenv('SUPABASE_URL')
+key = os.getenv("SUPABASE_SECRET_KEY")
+
+extract_dict = {'met_past_24h' : met_past_24h_extract_dict}
+
+def supabase_add_data(table_name, json_line):
+    new_values = extract_dict[table_name](json_line)
+
+    supabase = create_client(url, key)
+    supabase.table(table_name).insert(new_values).execute()
 
 # for line in read_every_line('data/met_past_24h.jsonl'):
 #     print(line)

@@ -10,6 +10,8 @@ numpy = "*"
 matplotlib = "*"
 python-dotenv = "*"
 mariadb = "*"
+sqlalchemy = "*"
+supabase = "*"
 
 [dev-packages]
 ipykernel = "*"
