@@ -1,5 +1,6 @@
 import json, os
 from get_funcs import met_loc_id, met_5d_forecast, met_past_24h, accu_loc_id, accu_5d_forecast
+from pipeline_funcs import get_last_line, met_past_24h_extract_dict, met_5d_extract_dict, accu_5d_extract_dict, supabase_add_data
 from dotenv import load_dotenv
 
 load_dotenv()
