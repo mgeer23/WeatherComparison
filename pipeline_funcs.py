@@ -1,5 +1,9 @@
-import os, json, mariadb, datetime
+import os, json, datetime
+# import mariadb
 from supabase import create_client
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ===============================================================
 # ================   READ SAVED JSONL FILES   ===================
@@ -141,7 +145,7 @@ def met_5d_extract_dict(json_line):
 
 def accu_5d_extract_dict(json_line):
     location = 'CREDENHILL'
-    date0_split = str.split(json_line['Headline']['EffectiveDate'][:10], '-')
+    date0_split = str.split(json_line['DailyForecasts'][0]['Date'][:10], '-')
     date0_split = [int(x) for x in date0_split]
     date0 = datetime.date(date0_split[0], date0_split[1], date0_split[2])
 
@@ -156,7 +160,7 @@ def accu_5d_extract_dict(json_line):
         temp_max = (d['Temperature']['Maximum']['Value'] -25) * 5 / 9
         temp_min = (d['Temperature']['Minimum']['Value'] -25) * 5 / 9
         precip_bool = d['Day']['HasPrecipitation']
-        return_list.append({'location' : location, 'date' : forecast_date, 'forecast_delta' : days_delta,
+        return_list.append({'location' : location, 'date' : forecast_date_str, 'forecast_delta' : days_delta,
                             'temp_max' : temp_max, 'temp_min' : temp_min, 'precip_bool' : precip_bool})
     return return_list
     
@@ -165,29 +169,29 @@ def accu_5d_extract_dict(json_line):
 # ===============================================================
 # ===================   MARIADB FUNCTIONS   =====================
 
-col_name_dict = {'met_past_24h' : ['(location, date_time, temp, weather_code, precip_bool)', 
-                                   '(?, ?, ?, ?, ?)']}
+# col_name_dict = {'met_past_24h' : ['(location, date_time, temp, weather_code, precip_bool)', 
+#                                    '(?, ?, ?, ?, ?)']}
 
-extract_dict = {'met_past_24h' : met_past_24h_extract_list}
+# extract_dict = {'met_past_24h' : met_past_24h_extract_list}
 
-def sql_add_data(table_name, json_line):
-    col_names = col_name_dict[table_name]
-    insert_query = f"""
-                    INSERT INTO {table_name} {col_names[0]}
-                    VALUES {col_names[1]}
-                    """
-    new_values = extract_dict[table_name](json_line)
+# def sql_add_data(table_name, json_line):
+#     col_names = col_name_dict[table_name]
+#     insert_query = f"""
+#                     INSERT INTO {table_name} {col_names[0]}
+#                     VALUES {col_names[1]}
+#                     """
+#     new_values = extract_dict[table_name](json_line)
 
-    try:
-        with mariadb.connect(host = 'localhost',
-                    user = os.getenv('MYSQL_USER'),
-                    password = os.getenv('MYSQL_PASS'),
-                    database = 'weather_comp') as connection:
-            cur = connection.cursor()
-            cur.executemany(insert_query, new_values)
-            connection.commit()
-    except mariadb.Error as e:
-        print(e)
+#     try:
+#         with mariadb.connect(host = 'localhost',
+#                     user = os.getenv('MYSQL_USER'),
+#                     password = os.getenv('MYSQL_PASS'),
+#                     database = 'weather_comp') as connection:
+#             cur = connection.cursor()
+#             cur.executemany(insert_query, new_values)
+#             connection.commit()
+#     except mariadb.Error as e:
+#         print(e)
 
 # ===============================================================
 # ===================   SUPABASE FUNCTIONS   ====================
@@ -196,11 +200,16 @@ url = os.getenv('SUPABASE_URL')
 key = os.getenv("SUPABASE_SECRET_KEY")
 
 extract_dict = {'met_past_24h' : met_past_24h_extract_dict,
-                'met_5d' : met_5d_extract_dict}
+                'met_5d' : met_5d_extract_dict,
+                'accu_5d' : accu_5d_extract_dict}
 
 def supabase_add_data(table_name, json_line):
     new_values = extract_dict[table_name](json_line)
 
     supabase = create_client(url, key)
-    supabase.table(table_name).insert(new_values).execute()
+    try:
+        response = supabase.table(table_name).upsert(new_values, ignore_duplicates=True).execute()
+    except:
+        print(f'Error inserting values into {table_name}')
+        return response
 

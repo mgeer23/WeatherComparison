@@ -1,6 +1,6 @@
 import json, os
 from get_funcs import met_loc_id, met_5d_forecast, met_past_24h, accu_loc_id, accu_5d_forecast
-from pipeline_funcs import get_last_line, met_past_24h_extract_dict, met_5d_extract_dict, accu_5d_extract_dict, supabase_add_data
+from pipeline_funcs import read_last_line, met_past_24h_extract_dict, met_5d_extract_dict, accu_5d_extract_dict, supabase_add_data
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,7 +13,6 @@ request = met_5d_forecast(met_credenhill_id)
 if type(request) == str:
     # with open('data/met_5d.jsonl', 'a') as f:
     with open('/WeatherComparison/data/met_5d.jsonl', 'a') as f:
-
         f.write(request + '\n')
 else:
     # with open('data/met_5d.jsonl', 'a') as f:
