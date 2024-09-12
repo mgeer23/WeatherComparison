@@ -94,15 +94,19 @@ def met_past_24h_extract_dict(json_line):
         date = day['value'][:-1]
         # split_date = str.split(date, '-')
         for h in day['Rep']:
-            temp = h['T']
+            if 'T' in h:
+                temp = h['T']
+            else:
+                temp = 'NaN'
             weather_code = h['W']
             precip_bool = int(int(weather_code) > 8)
             hour = int(int(h['$']) / 60)
             # dt = datetime.datetime(int(split_date[0]), \
             #                        int(split_date[1]), \
             #                         int(split_date[2]), hour)
-            stringtime = f"{date} {hour}:00:00"
-            return_list.append({'location' : location, 'date_time' : stringtime, 'temp' : temp, 
+            stringdate = f"{date}"
+            stringtime = f"{hour}:00:00"
+            return_list.append({'location' : location, 'date' : stringdate, 'time' : stringtime, 'temp' : temp, 
                                 'weather_code' : weather_code, 'precip_bool' : precip_bool})
     return return_list
 
@@ -211,5 +215,5 @@ def supabase_add_data(table_name, json_line):
         response = supabase.table(table_name).upsert(new_values, ignore_duplicates=True).execute()
     except:
         print(f'Error inserting values into {table_name}')
-        return response
+        # return response
 
