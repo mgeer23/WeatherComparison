@@ -212,7 +212,7 @@ def supabase_add_data(table_name, json_line):
 
     supabase = create_client(url, key)
     try:
-        response = supabase.table(table_name).upsert(new_values, ignore_duplicates=True).execute()
+        supabase.table(table_name).upsert(new_values, ignore_duplicates=True).execute()
     except:
         print(f'Error inserting values into {table_name}')
         # return response
